@@ -1,0 +1,11 @@
+../Core/Src/touchscreen.c:89:9:pick_color	16	static
+../Core/Src/touchscreen.c:108:6:set_pixel	72	static
+../Core/Src/touchscreen.c:166:6:change_RGB	24	static
+../Core/Src/touchscreen.c:174:6:update_angle	0	static
+../Core/Src/touchscreen.c:181:6:draw_donut	16	static,ignoring_inline_asm
+../Core/Src/touchscreen.c:190:6:draw_upgrades	32	static
+../Core/Src/touchscreen.c:205:6:draw_UI	64	static
+../Core/Src/touchscreen.c:217:6:draw_frame	64	static
+../Core/Src/touchscreen.c:223:6:reset_frame	16	static
+../Core/Src/touchscreen.c:231:6:get_donut_cords	72	static
+../Core/Src/touchscreen.c:250:6:AppMain	176	static

@@ -1,0 +1,4 @@
+../Core/Src/mcufont/mf_justify.c:108:13:render_left	56	static
+../Core/Src/mcufont/mf_justify.c:42:9:mf_get_string_width	40	static
+../Core/Src/mcufont/mf_justify.c:204:6:mf_render_aligned	64	static
+../Core/Src/mcufont/mf_justify.c:265:6:mf_render_justified	80	static

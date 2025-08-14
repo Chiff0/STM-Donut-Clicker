@@ -1,0 +1,11 @@
+../Core/Src/touchscreen.c:89:9:pick_color	1
+../Core/Src/touchscreen.c:108:6:set_pixel	5
+../Core/Src/touchscreen.c:166:6:change_RGB	1
+../Core/Src/touchscreen.c:174:6:update_angle	2
+../Core/Src/touchscreen.c:181:6:draw_donut	4
+../Core/Src/touchscreen.c:190:6:draw_upgrades	21
+../Core/Src/touchscreen.c:205:6:draw_UI	1
+../Core/Src/touchscreen.c:217:6:draw_frame	1
+../Core/Src/touchscreen.c:223:6:reset_frame	2
+../Core/Src/touchscreen.c:231:6:get_donut_cords	7
+../Core/Src/touchscreen.c:250:6:AppMain	12

@@ -1,0 +1,2 @@
+../Core/Src/mcufont/mf_bwfont.c:105:9:mf_bwfont_render_character	18
+../Core/Src/mcufont/mf_bwfont.c:122:9:mf_bwfont_character_width	6
