@@ -77,12 +77,12 @@ typedef struct
 } Upgrade;
 Upgrade upgrades[] = {
 	{400, 0, SCREEN_WIDTH - 400, 30, 100, "AUTO SPIN", false},
-	{400, 30, SCREEN_WIDTH - 400, 30, 200, "FASTER", false},
-	{400, 60, SCREEN_WIDTH - 400, 30, 1000, "RGB", false},
-	{400, 90, SCREEN_WIDTH - 400, 30, 2000, "ASCII", false},
-	{400, 120, SCREEN_WIDTH - 400, 30, 300, "EVA-00", false},
-	{400, 150, SCREEN_WIDTH - 400, 30, 4000, "EVA-01", false},
-	{400, 180, SCREEN_WIDTH - 400, 30, 5000, "EVA-02", false}
+	{400, 0, SCREEN_WIDTH - 400, 30, 200, "FASTER", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 1000, "RGB", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 2000, "ASCII", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 300, "EVA-00", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 4000, "EVA-01", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 5000, "EVA-02", false}
 };
 
 
@@ -162,6 +162,65 @@ void set_pixel
 	}
 }
 
+void apply_upgrade (Upgrade* upgrade)
+{
+	Donut.donuts_count -= upgrade.cost;
+	
+	if (!strcmp (upgrade.label, "AUTO SPIN"))
+	{
+		Donut.Spin_Rate = 100;
+		Donut.donuts_passive += 1;
+	}
+	else if (!strcmp (upgrade.label, "FASTER"))
+	{
+		Donut.Spin_Rate -= 10;
+		Donut.donuts_passive += 1;
+	}
+	else if (!strcmp (upgrade.label, "RGB"))
+	{
+		Donut.RGB = true;
+	}
+	else if (!strcmp (upgrade.label, "ASCII"))
+	{
+		Donut.ASCII = true;
+	}
+	else if (!strcmp (upgrade.label, "EVA 00"))
+	{
+		//TODO: apply rei color theme
+	}
+	else if (!strcmp (upgrade.label, "EVA 01"))
+	{
+		//TODO: apply shinji color theme
+	}
+	else if (!strcmp (upgrade.label, "EVA 02"))
+	{
+		//TODO: apply asuka color theme
+	}
+
+}
+
+void check_if_upgrade_clicked (int x, int y)
+{
+	for (int i = 0; i < sizeof(upgrades)/sizeof(Upgrade); i++)
+	{
+		if 
+		(
+			!upgrades[i].purchased && 
+			touch_x >= upgrades[i].x && 
+			touch_x < upgrades[i].x + upgrades[i].width &&
+			touch_y >= upgrades[i].y && 
+			touch_y < upgrades[i].y + upgrades[i].height
+		)
+        {
+			if (Donut.donuts_count >= upgrades[i].cost)
+			{
+				upgrades[i].purchased = true;
+				apply_upgrade (upgrades[i]);
+			}
+		}
+	}
+}
+
 
 void change_RGB ()
 {
@@ -191,12 +250,16 @@ void draw_upgrades ()
 {
 	int stack_offset = 0;
 	int n = sizeof (upgrades) / sizeof (Upgrade);
+	int y_offset;
 
 	for (int i = 0; i < n; i++)
 	{
-		if (upgrades[i].cost < Donut.donuts_count && !upgrades[i].purchased) FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y - stack_offset, upgrades[i].width, upgrades[i].height, UTIL_LCD_COLOR_WHITE);
+		if (upgrades[i].cost < Donut.donuts_count && !upgrades[i].purchased) 
+		{
+			FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y + y_offset, upgrades[i].width, upgrades[i].height, UTIL_LCD_COLOR_WHITE);
+			y_offset += 30;
+		}
 		else if (upgrades[i].cost > Donut.donuts_count) break; // cuz they ascending in price
-		else stack_offset += 30;
 	}
 
 }
