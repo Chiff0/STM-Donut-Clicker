@@ -65,7 +65,7 @@ typedef struct
 	bool ASCII;
 } Donut_Game;
 
-Donut_Game Donut = {42690, 1, 0, 0, 1, &rgb, false, false};
+Donut_Game Donut = {0, 1, 0, 0, 1, &rgb, false, false};
 
 typedef struct
 {
@@ -164,35 +164,35 @@ void set_pixel
 
 void apply_upgrade (Upgrade* upgrade)
 {
-	Donut.donuts_count -= upgrade.cost;
+	Donut.donuts_count -= upgrade -> cost;
 	
-	if (!strcmp (upgrade.label, "AUTO SPIN"))
+	if (!strcmp (upgrade -> label, "AUTO SPIN"))
 	{
 		Donut.Spin_Rate = 100;
 		Donut.donuts_passive += 1;
 	}
-	else if (!strcmp (upgrade.label, "FASTER"))
+	else if (!strcmp (upgrade -> label, "FASTER"))
 	{
 		Donut.Spin_Rate -= 10;
 		Donut.donuts_passive += 1;
 	}
-	else if (!strcmp (upgrade.label, "RGB"))
+	else if (!strcmp (upgrade -> label, "RGB"))
 	{
 		Donut.RGB = true;
 	}
-	else if (!strcmp (upgrade.label, "ASCII"))
+	else if (!strcmp (upgrade -> label, "ASCII"))
 	{
 		Donut.ASCII = true;
 	}
-	else if (!strcmp (upgrade.label, "EVA 00"))
+	else if (!strcmp (upgrade -> label, "EVA-00"))
 	{
 		//TODO: apply rei color theme
 	}
-	else if (!strcmp (upgrade.label, "EVA 01"))
+	else if (!strcmp (upgrade -> label, "EVA-01"))
 	{
 		//TODO: apply shinji color theme
 	}
-	else if (!strcmp (upgrade.label, "EVA 02"))
+	else if (!strcmp (upgrade -> label, "EVA-02"))
 	{
 		//TODO: apply asuka color theme
 	}
@@ -201,21 +201,22 @@ void apply_upgrade (Upgrade* upgrade)
 
 void check_if_upgrade_clicked (int x, int y)
 {
-	for (int i = 0; i < sizeof(upgrades)/sizeof(Upgrade); i++)
+	FLP_Draw_Rectangle(b_1, x-2, y-2, 4, 4, UTIL_LCD_COLOR_BLUE);
+	for (int i = 0; i < sizeof (upgrades) / sizeof (Upgrade); i++)
 	{
 		if 
 		(
 			!upgrades[i].purchased && 
-			touch_x >= upgrades[i].x && 
-			touch_x < upgrades[i].x + upgrades[i].width &&
-			touch_y >= upgrades[i].y && 
-			touch_y < upgrades[i].y + upgrades[i].height
+			x >= upgrades[i].x && 
+			x < upgrades[i].x + upgrades[i].width &&
+			y >= upgrades[i].y && 
+			y < upgrades[i].y + upgrades[i].height
 		)
         {
 			if (Donut.donuts_count >= upgrades[i].cost)
 			{
 				upgrades[i].purchased = true;
-				apply_upgrade (upgrades[i]);
+				apply_upgrade (&upgrades[i]);
 			}
 		}
 	}
@@ -250,13 +251,16 @@ void draw_upgrades ()
 {
 	int stack_offset = 0;
 	int n = sizeof (upgrades) / sizeof (Upgrade);
-	int y_offset;
+	int y_offset = 0;
 
 	for (int i = 0; i < n; i++)
 	{
 		if (upgrades[i].cost < Donut.donuts_count && !upgrades[i].purchased) 
 		{
-			FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y + y_offset, upgrades[i].width, upgrades[i].height, UTIL_LCD_COLOR_WHITE);
+			upgrades[i].y = y_offset;
+
+			FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y, upgrades[i].width, upgrades[i].height, UTIL_LCD_COLOR_WHITE);
+
 			y_offset += 30;
 		}
 		else if (upgrades[i].cost > Donut.donuts_count) break; // cuz they ascending in price
@@ -340,7 +344,8 @@ void AppMain()
 
 		if (TS_State.TouchDetected && !prev_touch_detected)
 		{
-			if (TS_State.TouchX > 100 && TS_State.TouchX < 380 && TS_State.TouchY > 50 && TS_State.TouchY < 220)
+			int x_corrected = TS_State.TouchY, y_corrected = TS_State.TouchX;
+			if (x_corrected > 100 && x_corrected < 380 && y_corrected > 50 && y_corrected < 220)
 			{
 				Donut.donuts_count += Donut.donuts_per_tap;
 
@@ -350,6 +355,15 @@ void AppMain()
                     R(5, 8, c_B, s_B);
 				}
 			}
+			else check_if_upgrade_clicked(x_corrected, y_corrected);
+
+		    // Debug: Show actual coordinates
+		    char debug[50];
+		    sprintf(debug, "X:%d Y:%d", x_corrected, y_corrected);
+		    FLP_Draw_String(b_1, debug, 0, 100, 0xFFFF);
+
+		    // Draw where the system thinks you touched
+		    FLP_Draw_Rectangle(b_1, x_corrected-2, y_corrected-2, 4, 4, 0xF800);
 		}
 
 		prev_touch_detected = TS_State.TouchDetected;
@@ -358,7 +372,7 @@ void AppMain()
         while (blockRendering);
         blockRendering = 1;
 
-		HAL_Delay (Donut.Spin_Rate);
+		HAL_Delay (16);
 
 		if (Donut.Spin_Rate > 0)
 		{
