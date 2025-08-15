@@ -49,6 +49,9 @@ typedef struct
 } Color_Filter;
 
 Color_Filter rgb = {1, 1, 1};
+Color_Filter eva_00 = {0.4f, 0.6f, 1.0f};
+Color_Filter eva_01 = {0.5f, 2.1f, 0.5f};
+Color_Filter eva_02 = {1.0f, 0.2f, 0.2f};
 
 typedef struct
 {
@@ -63,9 +66,10 @@ typedef struct
 
 	bool RGB;
 	bool ASCII;
+	bool EVA;
 } Donut_Game;
 
-Donut_Game Donut = {0, 1, 0, 0, 1, &rgb, false, false};
+Donut_Game Donut = {42690, 1, 0, 0, 1, &rgb, false, false};
 
 typedef struct
 {
@@ -186,16 +190,19 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "EVA-00"))
 	{
-		//TODO: apply rei color theme
+		Donut.Colorway = &eva_00;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-01"))
 	{
-		//TODO: apply shinji color theme
+		Donut.Colorway = &eva_01;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-02"))
 	{
-		//TODO: apply asuka color theme
+		Donut.Colorway = &eva_02;
 	}
+
+	FLP_Draw_Rectangle (b_1, upgrade -> x + 4, upgrade -> y + 4, upgrade -> width - 4, upgrade -> height - 4, UTIL_LCD_COLOR_WHITE);
+	FLP_Draw_String (b_1, upgrade -> label, upgrade -> x, upgrade -> y, UTIL_LCD_COLOR_BLACK);
 
 }
 
