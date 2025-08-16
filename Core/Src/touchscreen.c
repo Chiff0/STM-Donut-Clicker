@@ -43,15 +43,16 @@ double RGB_angle = 0.0;
 
 typedef struct
 {
+	char* name;
 	float red;
 	float green;
 	float blue;
 } Color_Filter;
 
-Color_Filter rgb = {1, 1, 1};
-Color_Filter eva_00 = {0.4f, 0.6f, 1.0f};
-Color_Filter eva_01 = {0.5f, 2.1f, 0.5f};
-Color_Filter eva_02 = {1.0f, 0.2f, 0.2f};
+Color_Filter rgb = {"RGB", 1, 1, 1};
+Color_Filter eva_00 = {"REI", 1.7f, 0.1f, 4.0f};
+Color_Filter eva_01 = {"SHINJI", 0.5f, 2.1f, 0.5f};
+Color_Filter eva_02 = {"ASUKA", 2.1f, 0.1f, 0.1f};
 
 typedef struct
 {
@@ -69,7 +70,7 @@ typedef struct
 	bool EVA;
 } Donut_Game;
 
-Donut_Game Donut = {42690, 1, 0, 0, 1, &rgb, false, false};
+Donut_Game Donut = {42690, 1, 0, 0, 1, &rgb, false, false, false};
 
 typedef struct
 {
@@ -80,6 +81,7 @@ typedef struct
 
 } Upgrade;
 Upgrade upgrades[] = {
+	{400, 0, SCREEN_WIDTH - 400, 30, 0, "STORE", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 100, "AUTO SPIN", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 200, "FASTER", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 1000, "RGB", false},
@@ -106,6 +108,27 @@ int32_t pick_color
 
 	return red_565 | green_565 | blue_565;
 }
+
+uint32_t color_filter_to_rgb565 (Color_Filter* filter)
+{
+	uint8_t intensity = 128;
+
+    uint8_t r = (uint8_t)(intensity * filter -> red);
+    uint8_t g = (uint8_t)(intensity * filter -> green);
+    uint8_t b = (uint8_t)(intensity * filter -> blue);
+
+    if (r > 255) r = 255;
+    if (g > 255) g = 255;
+    if (b > 255) b = 255;
+
+    uint16_t red_565 = (r >> 3) << 11;
+    uint16_t green_565 = (g >> 2) << 5;
+    uint16_t blue_565 = (b >> 3);
+
+    return red_565 | green_565 | blue_565;
+}
+
+
 
 
 
@@ -182,6 +205,7 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "RGB"))
 	{
+		Donut.EVA = false;
 		Donut.RGB = true;
 	}
 	else if (!strcmp (upgrade -> label, "ASCII"))
@@ -190,14 +214,20 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "EVA-00"))
 	{
+		Donut.RGB = false;
+		Donut.EVA = true;
 		Donut.Colorway = &eva_00;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-01"))
 	{
+		Donut.RGB = false;
+		Donut.EVA = true;
 		Donut.Colorway = &eva_01;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-02"))
 	{
+		Donut.RGB = false;
+		Donut.EVA = true;
 		Donut.Colorway = &eva_02;
 	}
 
@@ -208,12 +238,10 @@ void apply_upgrade (Upgrade* upgrade)
 
 void check_if_upgrade_clicked (int x, int y)
 {
-	FLP_Draw_Rectangle(b_1, x-2, y-2, 4, 4, UTIL_LCD_COLOR_BLUE);
-	for (int i = 0; i < sizeof (upgrades) / sizeof (Upgrade); i++)
+	for (int i = 1; i < sizeof (upgrades) / sizeof (Upgrade); i++)
 	{
 		if 
 		(
-			!upgrades[i].purchased && 
 			x >= upgrades[i].x && 
 			x < upgrades[i].x + upgrades[i].width &&
 			y >= upgrades[i].y && 
@@ -256,17 +284,18 @@ void draw_donut ()
 
 void draw_upgrades ()
 {
-	int stack_offset = 0;
+	int stack_offset = 30;
 	int n = sizeof (upgrades) / sizeof (Upgrade);
 	int y_offset = 0;
 
+
 	for (int i = 0; i < n; i++)
 	{
-		if (upgrades[i].cost < Donut.donuts_count && !upgrades[i].purchased) 
+		if (upgrades[i].cost < Donut.donuts_count)
 		{
 			upgrades[i].y = y_offset;
 
-			FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y, upgrades[i].width, upgrades[i].height, UTIL_LCD_COLOR_WHITE);
+			FLP_Draw_Upgrade (b_1, upgrades[i].label, upgrades[i].x, upgrades[i].y, upgrades[i].width, upgrades[i].height, (upgrades[i].purchased) ? color_filter_to_rgb565 (Donut.Colorway) : UTIL_LCD_COLOR_WHITE);
 
 			y_offset += 30;
 		}
@@ -278,14 +307,26 @@ void draw_upgrades ()
 
 void draw_UI ()
 {
-	FLP_Draw_Box (b_1, 20, 200, 4, 50, 50, UTIL_LCD_COLOR_WHITE);
+	if (!strcmp (Donut.Colorway -> name, "ASUKA")) FLP_Draw_String (b_1, "BAKA", 0, 200, color_filter_to_rgb565 (Donut.Colorway));
 
-	FLP_Draw_String (b_1, "DONUT TOUCH ME", 5, 5, UTIL_LCD_COLOR_WHITE);
+	FLP_Draw_String (b_1, "DONUT TOUCH ME", 5, 5, color_filter_to_rgb565(Donut.Colorway));
 
     char counter[32];
     sprintf(counter, "%lu DONUTS TOUCHED", Donut.donuts_count);
-	FLP_Draw_String (b_1, counter, 5, 50, UTIL_LCD_COLOR_WHITE);
+	FLP_Draw_String (b_1, counter, 5, 50, color_filter_to_rgb565(Donut.Colorway));
 	draw_upgrades ();
+	
+
+    char dps[32];
+    sprintf(dps, "%lu DPS", Donut.donuts_passive * 60);
+    FLP_Draw_String(b_1, dps, 5, 65, 0x07E0);
+
+    if (Donut.Colorway && Donut.Colorway -> name) {
+        sprintf(counter, "MODE: %s", Donut.Colorway->name);
+        FLP_Draw_String(b_1, counter, 5, 80, color_filter_to_rgb565(Donut.Colorway));
+    }
+
+
 }
 
 void draw_frame ()
