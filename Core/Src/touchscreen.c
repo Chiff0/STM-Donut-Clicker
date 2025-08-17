@@ -33,8 +33,9 @@ double RGB_angle = 0.0;
 bool third_impact = false;
 
 uint32_t nums[6];
+uint32_t inactivity_counter = 0;
 
-// shoutout a1k0n for the macro
+// shoutout to a1k0n for the macro
 #define R(mul,shift,x,y) \
   _=x; \
   x -= mul*y>>shift; \
@@ -68,14 +69,18 @@ typedef struct
 	int Spin_Rate;
 	int multiplier;
 
+	int r11, r12, r21, r22, framerate;
+
 	Color_Filter* Colorway;
 
 	bool RGB;
 	bool ASCII;
 	bool EVA;
+	bool power_saving_mode;
+	bool third_impact;
 } Donut_Game;
 
-Donut_Game Donut = {10000000, 1, 0, 0, 1, &rgb, false, false, false};
+Donut_Game Donut = {10000001, 1, 0, 0, 1, 8, 12, 8, 13, 16, &rgb, false, false, false, false, false};
 
 typedef struct
 {
@@ -142,40 +147,35 @@ uint32_t color_filter_to_rgb565 (Color_Filter* filter)
 }
 
 
-void set_to_white ()
-{
-	hdma2d.Init.Mode = DMA2D_R2M;
-	if(HAL_DMA2D_Init (&hdma2d) != HAL_OK) Error_Handler();
-	HAL_DMA2D_Start (&hdma2d, 0xFFFF, (uint32_t) b_1, SCREEN_WIDTH, SCREEN_HEIGHT);
-	HAL_DMA2D_PollForTransfer (&hdma2d, 10);
-}
-
-
 
 void initiate_third_impact ()
 {
-    set_to_white ();
+	memset (b_1, 0xFF, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof (uint16_t));
     draw_donut ();
 
     HAL_Delay (3000);
-    FLP_Draw_String (b_1, "A: Is this what you wanted?", 0, 0, 0x0000);
+    FLP_Draw_String (b_1, "A: Well, I guess you got what you wanted", 5, 5, 0x0000);
     draw_donut ();
     HAL_Delay (3000);
-    FLP_Draw_String (b_1, "B: It's not about what I wanted, it had to be done.", 0, 30, 0x0000);
+    FLP_Draw_String (b_1, "B: It's not about what I wanted, it had to be done.", 5, 35, 0x0000);
     draw_donut ();
     HAL_Delay (3000);
-    FLP_Draw_String (b_1, "A: So... What do we do now? ...Is this it? ...Can we finally rest?", 0, 60, 0x0000);
+    FLP_Draw_String (b_1, "A: So... This is the end of the story... Our work here is done", 5, 65, 0x0000);
     draw_donut ();
     HAL_Delay (3000);
-    FLP_Draw_String (b_1, "B: Humanity has just reached Neon Genesis. We just got started.", 0, 90, 0x0000);
+    FLP_Draw_String (b_1, "B: Humanity has just reached Neon Genesis.", 5, 95, 0x0000);
     draw_donut ();
     HAL_Delay (3000);
-    set_to_white ();
+    FLP_Draw_String (b_1, "B: Our work here has just begun. We have a whole world to rebuild. ", 5, 125, 0x0000);
+	draw_donut ();
+	HAL_Delay (3000);
+
+    memset (b_1, 0xFF, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof (uint16_t));
     HAL_Delay (3000);
 
-    FLP_Draw_String (b_1, "Thanks for playing this demo! I hope you enjoyed it.", 0, 0, 0x0000);
-    FLP_Draw_String (b_1, "Filip DObnikar, Vgrajeni sistemi, 2025", 0, 0, 0x0000);
-    FLP_Draw_String (b_1, "Se opravicujem da nicem uporabil nobenega rtosa.", 0, 30, 0x0000);
+    FLP_Draw_String (b_1, "Thanks for playing this demo. I hope you enjoyed it.", 10, 10, 0x0000);
+    FLP_Draw_String (b_1, "Filip Dobnikar, Vgrajeni sistemi, 2025", 10, 40, 0x0000);
+    FLP_Draw_String (b_1, "Se opravicujem da nicem uporabil nobenega rtosa.", 10, 70, 0x0000);
     draw_donut ();
 
 	for (;;);
@@ -245,6 +245,11 @@ void apply_upgrade (Upgrade* upgrade)
 	
 	if (!strcmp (upgrade -> label, "AUTO SPIN"))
 	{
+		if (Donut.r11 > 2)
+		{
+			Donut.r11--;
+			Donut.r21--;
+		}
 		if (!upgrade -> purchased) Donut.Spin_Rate = 100;
 		else Donut.Spin_Rate -= 10;
 		Donut.donuts_passive += 1;
@@ -290,7 +295,7 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else
 	{
-		initiate_third_impact ();
+		Donut.third_impact = true;
 	}
 
 
@@ -363,7 +368,6 @@ void draw_upgrades ()
 
 			y_offset += 30;
 		}
-		else if (upgrades[i].cost > Donut.donuts_count) break; // cuz they ascending in price
 	}
 
 }
@@ -388,7 +392,7 @@ void draw_UI ()
 	{
 		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
 	}
-	FLP_Draw_String (b_1, counter, 5, 50, color_filter_to_rgb565(Donut.Colorway));
+	FLP_Draw_String (b_1, counter, 5, 50, color_filter_to_rgb565 (Donut.Colorway));
 	draw_upgrades ();
 	
 
@@ -396,9 +400,10 @@ void draw_UI ()
     sprintf(dps, "%lu DPS", calculate_dps ());
     FLP_Draw_String(b_1, dps, 5, 65, 0x07E0);
 
-    if (Donut.Colorway && Donut.Colorway -> name) {
-        sprintf(counter, "MODE: %s", Donut.Colorway->name);
-        FLP_Draw_String(b_1, counter, 5, 80, color_filter_to_rgb565(Donut.Colorway));
+    if (Donut.Colorway && Donut.Colorway -> name)
+    {
+        sprintf (counter, "MODE: %s", Donut.Colorway->name);
+        FLP_Draw_String (b_1, counter, 5, 80, color_filter_to_rgb565 (Donut.Colorway));
     }
 
 
@@ -436,6 +441,49 @@ void get_donut_cords ()
 	}
 }
 
+void draw_frame_low_power ()
+{
+    static int pulse = 0;
+    pulse = (pulse + 1) % 60;
+
+
+    reset_frame();
+
+
+    uint16_t brightness = 128 + (sin(pulse * 0.1) * 127);
+    uint16_t color = (brightness >> 3) << 11 | (brightness >> 2) << 5 | (brightness >> 3);
+
+    FLP_Draw_String(b_1, "TOUCH TO WAKE", 150, 120, color);
+    FLP_Draw_String(b_1, "POWER SAVE MODE", 145, 140, color);
+
+
+	char counter[32];
+	if (Donut.donuts_count < 1000)
+	{
+		sprintf(counter, "%lu LCL COLLECTED", Donut.donuts_count);
+	}
+	else if (Donut.donuts_count < 1000000)
+	{
+		sprintf (counter, "%lu.%luK LCL COLLECTED", Donut.donuts_count / 1000, (Donut.donuts_count % 1000) / 10);
+	}
+	else
+	{
+		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
+	}
+    FLP_Draw_String(b_1, counter, 130, 160, color);
+    SCB_CleanInvalidateDCache ();
+    draw_donut ();
+}
+
+
+
+
+void check_for_inactivity ()
+{
+	if (inactivity_counter > 100 && !Donut.power_saving_mode) Donut.power_saving_mode = true;
+	if (!inactivity_counter && Donut.power_saving_mode) Donut.power_saving_mode = false;
+}
+
 
 void AppMain()
 {
@@ -465,12 +513,14 @@ void AppMain()
 
 		memset (z, 127, 1760);
 
-		get_donut_cords ();
+		if (!Donut.power_saving_mode && !Donut.third_impact) get_donut_cords ();
 
 		counter %= 6;
 
 		if (TS_State.TouchDetected && !prev_touch_detected)
 		{
+			if (inactivity_counter > 0) inactivity_counter = 0;
+
 			int x_corrected = TS_State.TouchY, y_corrected = TS_State.TouchX;
 			if (x_corrected > 100 && x_corrected < 380 && y_corrected > 50 && y_corrected < 220)
 			{
@@ -478,14 +528,14 @@ void AppMain()
 
 				if (!Donut.Spin_Rate)
 				{
-                    R(5, 7, c_A, s_A);
-                    R(5, 8, c_B, s_B);
+                    R(Donut.r11, Donut.r12, c_A, s_A);
+                    R(Donut.r21, Donut.r22, c_B, s_B);
 				}
 				nums[counter++] = Donut.donuts_per_tap++;
 			}
 			else
 			{
-				check_if_upgrade_clicked(x_corrected, y_corrected);
+				check_if_upgrade_clicked (x_corrected, y_corrected);
 				nums[counter++] = 0;
 			}
 
@@ -500,6 +550,7 @@ void AppMain()
 		else
 		{
 			nums[counter++] = 0;
+			inactivity_counter++;
 		}
 
 		prev_touch_detected = TS_State.TouchDetected;
@@ -508,16 +559,30 @@ void AppMain()
         while (blockRendering);
         blockRendering = 1;
 
-		HAL_Delay (16);
+        check_for_inactivity ();
+
+        if (Donut.power_saving_mode)
+        {
+        	HAL_Delay (10000);
+        	draw_frame_low_power ();
+        }
+        else if (Donut.third_impact)
+        {
+        	initiate_third_impact ();
+        }
+        else
+        {
+			HAL_Delay (16);
+			draw_frame ();
+        }
 
 		if (Donut.Spin_Rate > 0)
 		{
-	        R(5, 7, c_A, s_A);
-	        R(5, 8, c_B, s_B);
+	        R(Donut.r11, Donut.r12, c_A, s_A);
+	        R(Donut.r21, Donut.r22, c_B, s_B);
 		}
 
 		Donut.donuts_count += Donut.donuts_passive;
-		draw_frame ();
 
 
 
