@@ -464,8 +464,8 @@ void draw_frame_low_power ()
     uint16_t brightness = 128 + (sin(pulse * 0.1) * 127);
     uint16_t color = (brightness >> 3) << 11 | (brightness >> 2) << 5 | (brightness >> 3);
 
-    FLP_Draw_String(b_1, "TOUCH TO WAKE", 150, 120, color);
-    FLP_Draw_String(b_1, "POWER SAVE MODE", 145, 140, color);
+    FLP_Draw_String(b_1, "TOUCH TO WAKE", 190, 120, color);
+    FLP_Draw_String(b_1, "POWER SAVE MODE", 185, 140, color);
 
 
 	char counter[32];
@@ -481,7 +481,7 @@ void draw_frame_low_power ()
 	{
 		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
 	}
-    FLP_Draw_String(b_1, counter, 130, 160, color);
+    FLP_Draw_String(b_1, counter, 170, 160, color);
     SCB_CleanInvalidateDCache ();
     draw_donut ();
 }
