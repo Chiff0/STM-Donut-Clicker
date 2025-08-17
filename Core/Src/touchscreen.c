@@ -9,6 +9,7 @@
 #include "stm32h750b_discovery_lcd.h"
 #include "FLP_lib.h"
 
+
 #define PI 3.14159265359
 #define H 22
 #define W 80
@@ -31,6 +32,7 @@ double RGB_angle = 0.0;
 
 bool third_impact = false;
 
+uint32_t nums[6];
 
 // shoutout a1k0n for the macro
 #define R(mul,shift,x,y) \
@@ -56,6 +58,7 @@ Color_Filter eva_00 = {"REI", 1.7f, 0.1f, 4.0f};
 Color_Filter eva_01 = {"SHINJI", 0.5f, 2.1f, 0.5f};
 Color_Filter eva_02 = {"ASUKA", 2.1f, 0.1f, 0.1f};
 
+
 typedef struct
 {
 	uint32_t donuts_count;        
@@ -72,7 +75,7 @@ typedef struct
 	bool EVA;
 } Donut_Game;
 
-Donut_Game Donut = {42690, 1, 0, 0, 1, &rgb, false, false, false};
+Donut_Game Donut = {10000000, 1, 0, 0, 1, &rgb, false, false, false};
 
 typedef struct
 {
@@ -87,11 +90,19 @@ Upgrade upgrades[] = {
 	{400, 0, SCREEN_WIDTH - 400, 30, 100, "AUTO SPIN", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 1000, "RGB", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 2000, "ASCII", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 300, "EVA-00", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 4000, "EVA-01", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 5000, "EVA-02", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 1000000, "THIRD IMPACT", false}
+	{400, 0, SCREEN_WIDTH - 400, 30, 4000, "EVA-00", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 16000, "EVA-01", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 50000, "EVA-02", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 10000000, "THIRD IMPACT", false}
 };
+
+int32_t calculate_dps ()
+{
+	int32_t dps = 6 * Donut.donuts_passive;
+	for (int i = 0; i < 6; i++) dps += nums[i];
+
+	return dps;
+}
 
 
 int32_t pick_color
@@ -131,7 +142,44 @@ uint32_t color_filter_to_rgb565 (Color_Filter* filter)
 }
 
 
+void set_to_white ()
+{
+	hdma2d.Init.Mode = DMA2D_R2M;
+	if(HAL_DMA2D_Init (&hdma2d) != HAL_OK) Error_Handler();
+	HAL_DMA2D_Start (&hdma2d, 0xFFFF, (uint32_t) b_1, SCREEN_WIDTH, SCREEN_HEIGHT);
+	HAL_DMA2D_PollForTransfer (&hdma2d, 10);
+}
 
+
+
+void initiate_third_impact ()
+{
+    set_to_white ();
+    draw_donut ();
+
+    HAL_Delay (3000);
+    FLP_Draw_String (b_1, "A: Is this what you wanted?", 0, 0, 0x0000);
+    draw_donut ();
+    HAL_Delay (3000);
+    FLP_Draw_String (b_1, "B: It's not about what I wanted, it had to be done.", 0, 30, 0x0000);
+    draw_donut ();
+    HAL_Delay (3000);
+    FLP_Draw_String (b_1, "A: So... What do we do now? ...Is this it? ...Can we finally rest?", 0, 60, 0x0000);
+    draw_donut ();
+    HAL_Delay (3000);
+    FLP_Draw_String (b_1, "B: Humanity has just reached Neon Genesis. We just got started.", 0, 90, 0x0000);
+    draw_donut ();
+    HAL_Delay (3000);
+    set_to_white ();
+    HAL_Delay (3000);
+
+    FLP_Draw_String (b_1, "Thanks for playing this demo! I hope you enjoyed it.", 0, 0, 0x0000);
+    FLP_Draw_String (b_1, "Filip DObnikar, Vgrajeni sistemi, 2025", 0, 0, 0x0000);
+    FLP_Draw_String (b_1, "Se opravicujem da nicem uporabil nobenega rtosa.", 0, 30, 0x0000);
+    draw_donut ();
+
+	for (;;);
+}
 
 
 void set_pixel
@@ -242,7 +290,7 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else
 	{
-
+		initiate_third_impact ();
 	}
 
 
@@ -345,7 +393,7 @@ void draw_UI ()
 	
 
     char dps[32];
-    sprintf(dps, "%lu DPS", Donut.donuts_passive * 60);
+    sprintf(dps, "%lu DPS", calculate_dps ());
     FLP_Draw_String(b_1, dps, 5, 65, 0x07E0);
 
     if (Donut.Colorway && Donut.Colorway -> name) {
@@ -402,6 +450,9 @@ void AppMain()
     TS_State_t TS_State;
     uint8_t prev_touch_detected = 0;
 
+    int counter = 0;
+
+    memset (nums, 0, 6 * sizeof (int));
 
     for (;;)
     {
@@ -416,6 +467,7 @@ void AppMain()
 
 		get_donut_cords ();
 
+		counter %= 6;
 
 		if (TS_State.TouchDetected && !prev_touch_detected)
 		{
@@ -429,16 +481,25 @@ void AppMain()
                     R(5, 7, c_A, s_A);
                     R(5, 8, c_B, s_B);
 				}
+				nums[counter++] = Donut.donuts_per_tap++;
 			}
-			else check_if_upgrade_clicked(x_corrected, y_corrected);
+			else
+			{
+				check_if_upgrade_clicked(x_corrected, y_corrected);
+				nums[counter++] = 0;
+			}
 
-		    // Debug: Show actual coordinates
+
 		    char debug[50];
 		    sprintf(debug, "X:%d Y:%d", x_corrected, y_corrected);
 		    FLP_Draw_String(b_1, debug, 0, 100, 0xFFFF);
 
-		    // Draw where the system thinks you touched
+
 		    FLP_Draw_Rectangle(b_1, x_corrected-2, y_corrected-2, 4, 4, 0xF800);
+		}
+		else
+		{
+			nums[counter++] = 0;
 		}
 
 		prev_touch_detected = TS_State.TouchDetected;

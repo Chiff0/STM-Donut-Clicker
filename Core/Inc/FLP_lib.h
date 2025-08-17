@@ -14,4 +14,4 @@ void FLP_Draw_String (uint16_t* buffer, char* string, int x, int y, uint32_t col
 void FLP_Draw_Upgrade (uint16_t* buffer, char* text, int x, int y, int height, int width, uint32_t color);
 
 
-#endif /* FLP_DISPLAY_H_ */
+#endif

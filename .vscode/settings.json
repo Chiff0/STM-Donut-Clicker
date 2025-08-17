@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "flp_lib_chars.h": "c"
+        "flp_lib_chars.h": "c",
+        "stm32h7xx_hal_dma2d.h": "c",
+        "main.h": "c"
     }
 }
