@@ -29,6 +29,8 @@ static int K2 = 5120 * 1024;
 
 double RGB_angle = 0.0;
 
+bool third_impact = false;
+
 
 // shoutout a1k0n for the macro
 #define R(mul,shift,x,y) \
@@ -83,12 +85,12 @@ typedef struct
 Upgrade upgrades[] = {
 	{400, 0, SCREEN_WIDTH - 400, 30, 0, "STORE", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 100, "AUTO SPIN", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 200, "FASTER", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 1000, "RGB", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 2000, "ASCII", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 300, "EVA-00", false},
 	{400, 0, SCREEN_WIDTH - 400, 30, 4000, "EVA-01", false},
-	{400, 0, SCREEN_WIDTH - 400, 30, 5000, "EVA-02", false}
+	{400, 0, SCREEN_WIDTH - 400, 30, 5000, "EVA-02", false},
+	{400, 0, SCREEN_WIDTH - 400, 30, 1000000, "THIRD IMPACT", false}
 };
 
 
@@ -195,41 +197,55 @@ void apply_upgrade (Upgrade* upgrade)
 	
 	if (!strcmp (upgrade -> label, "AUTO SPIN"))
 	{
-		Donut.Spin_Rate = 100;
+		if (!upgrade -> purchased) Donut.Spin_Rate = 100;
+		else Donut.Spin_Rate -= 10;
 		Donut.donuts_passive += 1;
-	}
-	else if (!strcmp (upgrade -> label, "FASTER"))
-	{
-		Donut.Spin_Rate -= 10;
-		Donut.donuts_passive += 1;
+		strcpy (upgrade -> label, "FASTER");
+		upgrade -> cost *= 2;
 	}
 	else if (!strcmp (upgrade -> label, "RGB"))
 	{
+		if (!upgrade -> purchased) Donut.donuts_passive *= 5;
 		Donut.EVA = false;
 		Donut.RGB = true;
+		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "ASCII"))
 	{
+		if (!upgrade -> purchased) Donut.donuts_per_tap *= 10;
 		Donut.ASCII = true;
+		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-00"))
 	{
+		if (!upgrade -> purchased) Donut.donuts_per_tap *= 10;
 		Donut.RGB = false;
 		Donut.EVA = true;
 		Donut.Colorway = &eva_00;
+		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-01"))
 	{
+		if (!upgrade -> purchased) Donut.donuts_passive *= 5;
 		Donut.RGB = false;
 		Donut.EVA = true;
 		Donut.Colorway = &eva_01;
+		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-02"))
 	{
+		if (!upgrade -> purchased) Donut.Spin_Rate *= 5;
 		Donut.RGB = false;
 		Donut.EVA = true;
 		Donut.Colorway = &eva_02;
+		upgrade -> cost = 0;
 	}
+	else
+	{
+
+	}
+
+
 
 	FLP_Draw_Rectangle (b_1, upgrade -> x + 4, upgrade -> y + 4, upgrade -> width - 4, upgrade -> height - 4, UTIL_LCD_COLOR_WHITE);
 	FLP_Draw_String (b_1, upgrade -> label, upgrade -> x, upgrade -> y, UTIL_LCD_COLOR_BLACK);
@@ -250,8 +266,8 @@ void check_if_upgrade_clicked (int x, int y)
         {
 			if (Donut.donuts_count >= upgrades[i].cost)
 			{
-				upgrades[i].purchased = true;
 				apply_upgrade (&upgrades[i]);
+				upgrades[i].purchased = true;
 			}
 		}
 	}
@@ -307,12 +323,23 @@ void draw_upgrades ()
 
 void draw_UI ()
 {
-	if (!strcmp (Donut.Colorway -> name, "ASUKA")) FLP_Draw_String (b_1, "BAKA", 0, 200, color_filter_to_rgb565 (Donut.Colorway));
+	if (!strcmp (Donut.Colorway -> name, "ASUKA")) FLP_Draw_String (b_1, "BAKA", 0, 200, UTIL_LCD_COLOR_WHITE);
 
 	FLP_Draw_String (b_1, "DONUT TOUCH ME", 5, 5, color_filter_to_rgb565(Donut.Colorway));
 
-    char counter[32];
-    sprintf(counter, "%lu DONUTS TOUCHED", Donut.donuts_count);
+	char counter[32];
+	if (Donut.donuts_count < 1000)
+	{
+		sprintf(counter, "%lu LCL COLLECTED", Donut.donuts_count);
+	}
+	else if (Donut.donuts_count < 1000000)
+	{
+		sprintf (counter, "%lu.%luK LCL COLLECTED", Donut.donuts_count / 1000, (Donut.donuts_count % 1000) / 10);
+	}
+	else
+	{
+		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
+	}
 	FLP_Draw_String (b_1, counter, 5, 50, color_filter_to_rgb565(Donut.Colorway));
 	draw_upgrades ();
 	
