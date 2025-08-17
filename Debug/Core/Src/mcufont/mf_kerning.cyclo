@@ -1,3 +1,0 @@
-../Core/Src/mcufont/mf_kerning.c:14:13:fit_leftedge	3
-../Core/Src/mcufont/mf_kerning.c:29:13:fit_rightedge	3
-../Core/Src/mcufont/mf_kerning.c:62:8:mf_compute_kerning	48

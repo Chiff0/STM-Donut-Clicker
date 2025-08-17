@@ -89,7 +89,7 @@ int main(void)
 
 
   SCB_CleanInvalidateDCache();
-  AppMain ();
+  DonutRotatus ();
 
 
   // --- 7. Stop ---

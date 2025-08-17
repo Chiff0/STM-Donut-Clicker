@@ -250,6 +250,12 @@ void apply_upgrade (Upgrade* upgrade)
 			Donut.r11--;
 			Donut.r21--;
 		}
+		if (Donut.r12 > 2)
+		{
+			Donut.r12--;
+			Donut.r22--;
+		}
+
 		if (!upgrade -> purchased) Donut.Spin_Rate = 100;
 		else Donut.Spin_Rate -= 10;
 		Donut.donuts_passive += 1;
@@ -258,15 +264,16 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "RGB"))
 	{
-		if (!upgrade -> purchased) Donut.donuts_passive *= 5;
+		if (!upgrade -> purchased) Donut.donuts_passive *= 10;
 		Donut.EVA = false;
-		Donut.RGB = true;
+		Donut.RGB = !Donut.RGB;
+		Donut.Colorway = &rgb;
 		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "ASCII"))
 	{
 		if (!upgrade -> purchased) Donut.donuts_per_tap *= 10;
-		Donut.ASCII = true;
+		Donut.ASCII = !Donut.ASCII;
 		upgrade -> cost = 0;
 	}
 	else if (!strcmp (upgrade -> label, "EVA-00"))
@@ -279,7 +286,7 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "EVA-01"))
 	{
-		if (!upgrade -> purchased) Donut.donuts_passive *= 5;
+		if (!upgrade -> purchased) Donut.donuts_passive *= 20;
 		Donut.RGB = false;
 		Donut.EVA = true;
 		Donut.Colorway = &eva_01;
@@ -360,7 +367,7 @@ void draw_upgrades ()
 
 	for (int i = 0; i < n; i++)
 	{
-		if (upgrades[i].cost < Donut.donuts_count)
+		if (upgrades[i].cost < Donut.donuts_count && !(i == 1 && Donut.r11 == 2))
 		{
 			upgrades[i].y = y_offset;
 
@@ -377,7 +384,7 @@ void draw_UI ()
 {
 	if (!strcmp (Donut.Colorway -> name, "ASUKA")) FLP_Draw_String (b_1, "BAKA", 0, 200, UTIL_LCD_COLOR_WHITE);
 
-	FLP_Draw_String (b_1, "DONUT TOUCH ME", 5, 5, color_filter_to_rgb565(Donut.Colorway));
+	FLP_Draw_String (b_1, "DONUT TOUCH ME", 10, 260, color_filter_to_rgb565 (Donut.Colorway));
 
 	char counter[32];
 	if (Donut.donuts_count < 1000)
@@ -392,19 +399,23 @@ void draw_UI ()
 	{
 		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
 	}
-	FLP_Draw_String (b_1, counter, 5, 50, color_filter_to_rgb565 (Donut.Colorway));
+	FLP_Draw_String (b_1, counter, 10, 10, color_filter_to_rgb565 (Donut.Colorway));
 	draw_upgrades ();
 	
 
     char dps[32];
     sprintf(dps, "%lu DPS", calculate_dps ());
-    FLP_Draw_String(b_1, dps, 5, 65, 0x07E0);
+    FLP_Draw_String(b_1, dps, 10, 40, 0x07E0);
 
     if (Donut.Colorway && Donut.Colorway -> name)
     {
-        sprintf (counter, "MODE: %s", Donut.Colorway->name);
-        FLP_Draw_String (b_1, counter, 5, 80, color_filter_to_rgb565 (Donut.Colorway));
+        sprintf (counter, "MODE: %s", Donut.Colorway -> name);
+        FLP_Draw_String (b_1, counter, 10, 70, color_filter_to_rgb565 (Donut.Colorway));
     }
+
+
+
+
 
 
 }
@@ -480,12 +491,12 @@ void draw_frame_low_power ()
 
 void check_for_inactivity ()
 {
-	if (inactivity_counter > 100 && !Donut.power_saving_mode) Donut.power_saving_mode = true;
+	if (inactivity_counter > 1000 && !Donut.power_saving_mode) Donut.power_saving_mode = true;
 	if (!inactivity_counter && Donut.power_saving_mode) Donut.power_saving_mode = false;
 }
 
 
-void AppMain()
+void DonutRotatus ()
 {
 	TS_Init_t ts_init;
     ts_init.Width = SCREEN_WIDTH;
@@ -563,7 +574,7 @@ void AppMain()
 
         if (Donut.power_saving_mode)
         {
-        	HAL_Delay (10000);
+        	HAL_Delay (100);
         	draw_frame_low_power ();
         }
         else if (Donut.third_impact)

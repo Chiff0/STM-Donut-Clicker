@@ -1,3 +1,0 @@
-../Core/Src/mcufont/mf_rlefont.c:183:13:write_ref_codeword.part.0	34
-../Core/Src/mcufont/mf_rlefont.c:247:9:mf_rlefont_render_character	30
-../Core/Src/mcufont/mf_rlefont.c:278:9:mf_rlefont_character_width	6

@@ -1,6 +1,0 @@
-../Core/Src/mcufont/mf_font.c:48:13:whitespace_callback	6
-../Core/Src/mcufont/mf_font.c:10:9:mf_render_character	2
-../Core/Src/mcufont/mf_font.c:28:9:mf_character_width	2
-../Core/Src/mcufont/mf_font.c:62:16:mf_character_whitespace	11
-../Core/Src/mcufont/mf_font.c:98:25:mf_find_font	1
-../Core/Src/mcufont/mf_font.c:117:30:mf_get_font_list	1

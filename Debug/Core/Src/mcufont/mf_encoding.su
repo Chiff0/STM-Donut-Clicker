@@ -1,2 +1,0 @@
-../Core/Src/mcufont/mf_encoding.c:71:9:mf_getchar	0	static
-../Core/Src/mcufont/mf_encoding.c:79:6:mf_rewind	0	static

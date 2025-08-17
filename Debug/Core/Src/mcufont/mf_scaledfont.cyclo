@@ -1,4 +1,0 @@
-../Core/Src/mcufont/mf_scaledfont.c:13:13:scaled_pixel_callback	3
-../Core/Src/mcufont/mf_scaledfont.c:29:16:scaled_character_width	1
-../Core/Src/mcufont/mf_scaledfont.c:40:16:scaled_render_character	1
-../Core/Src/mcufont/mf_scaledfont.c:63:6:mf_scale_font	1

@@ -13,8 +13,6 @@ RM := rm -rf
 -include Drivers/STM32H7xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/pn532/subdir.mk
--include Core/Src/mcufonts/subdir.mk
--include Core/Src/mcufont/subdir.mk
 -include Core/Src/subdir.mk
 -include Core/Components/mt48lc4m32b2/subdir.mk
 -include Core/Components/mt25tl01g/subdir.mk

@@ -26,8 +26,6 @@ Core/Components/ft5336 \
 Core/Components/mt25tl01g \
 Core/Components/mt48lc4m32b2 \
 Core/Src \
-Core/Src/mcufont \
-Core/Src/mcufonts \
 Core/Src/pn532 \
 Core/Startup \
 Drivers/STM32H7xx_HAL_Driver/Src/Legacy \
