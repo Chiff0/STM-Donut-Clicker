@@ -157,6 +157,13 @@ void SysTick_Handler(void)
 /*  file (startup_stm32h7xx.s).                                               */
 /******************************************************************************/
 
+
+void EXTI2_IRQHandler(void)
+{
+    // Handle touch screen interrupt
+    BSP_TS_IRQHandler (0);
+}
+
 /**
   * @brief  This function handles External lines 15 to 10 interrupt request.
   * @param  None
@@ -164,7 +171,7 @@ void SysTick_Handler(void)
   */
 void EXTI15_10_IRQHandler(void)
 {
-BSP_PB_IRQHandler(BUTTON_USER);
+	BSP_PB_IRQHandler (BUTTON_USER);
 }
 
 /**
