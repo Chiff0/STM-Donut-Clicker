@@ -1,6 +1,0 @@
-../Core/Src/FLP_lib.c:20:6:get_ASCII	24	static
-../Core/Src/FLP_lib.c:34:6:FLP_Draw_Rectangle	32	static
-../Core/Src/FLP_lib.c:45:6:FLP_Draw_Box	48	static
-../Core/Src/FLP_lib.c:51:6:FLP_Draw_Symbol	48	static
-../Core/Src/FLP_lib.c:76:6:FLP_Draw_String	32	static
-../Core/Src/FLP_lib.c:159:6:FLP_Draw_Upgrade	64	static

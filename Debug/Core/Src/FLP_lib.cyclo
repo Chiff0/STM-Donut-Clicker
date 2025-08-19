@@ -1,6 +1,0 @@
-../Core/Src/FLP_lib.c:20:6:get_ASCII	2
-../Core/Src/FLP_lib.c:34:6:FLP_Draw_Rectangle	8
-../Core/Src/FLP_lib.c:45:6:FLP_Draw_Box	12
-../Core/Src/FLP_lib.c:51:6:FLP_Draw_Symbol	14
-../Core/Src/FLP_lib.c:76:6:FLP_Draw_String	41
-../Core/Src/FLP_lib.c:159:6:FLP_Draw_Upgrade	11

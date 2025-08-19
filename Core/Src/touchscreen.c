@@ -85,7 +85,7 @@ typedef struct
 	bool third_impact;
 } Donut_Game;
 
-Donut_Game Donut = {10000001, 1, 0, 0, 1, 8, 12, 8, 13, 16, &rgb, false, false, false, false, false};
+Donut_Game Donut = {0, 1, 0, 0, 1, 8, 12, 8, 13, 16, &rgb, false, false, false, false, false};
 
 typedef struct
 {
@@ -262,7 +262,7 @@ void apply_upgrade (Upgrade* upgrade)
 		}
 
 		if (!upgrade -> purchased) Donut.Spin_Rate = 100;
-		else Donut.Spin_Rate -= 10;
+		else if (Donut.Spin_Rate > 10) Donut.Spin_Rate -= 10;
 		Donut.donuts_passive += 1;
 		strcpy (upgrade -> label, "FASTER");
 		upgrade -> cost *= 2;
@@ -299,7 +299,11 @@ void apply_upgrade (Upgrade* upgrade)
 	}
 	else if (!strcmp (upgrade -> label, "EVA-02"))
 	{
-		if (!upgrade -> purchased) Donut.Spin_Rate *= 5;
+		if (!upgrade -> purchased)
+		{
+			Donut.donuts_per_tap *= 50;
+			Donut.donuts_passive *= 20;
+		}
 		Donut.RGB = false;
 		Donut.EVA = true;
 		Donut.Colorway = &eva_02;
@@ -357,7 +361,7 @@ void update_angle ()
 void draw_donut ()
 {
 	hdma2d.Init.Mode = DMA2D_M2M;
-	if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) Error_Handler ();
+	if (HAL_DMA2D_Init (&hdma2d) != HAL_OK) Error_Handler ();
 	SCB_CleanInvalidateDCache ();
 	HAL_DMA2D_Start (&hdma2d, (uint32_t) b_1, 0xD0000000, SCREEN_WIDTH, SCREEN_HEIGHT);
 	HAL_DMA2D_PollForTransfer (&hdma2d, 100);
@@ -381,7 +385,6 @@ void draw_upgrades ()
 			y_offset += 30;
 		}
 	}
-
 }
 
 
@@ -566,11 +569,10 @@ void DonutRotatus ()
 				{
 					Donut.donuts_count += Donut.donuts_per_tap;
 
-					if (!Donut.Spin_Rate)
-					{
-						R(Donut.r11, Donut.r12, c_A, s_A);
-						R(Donut.r21, Donut.r22, c_B, s_B);
-					}
+
+					R(Donut.r11 - 1, Donut.r12 - 1, c_A, s_A);
+					R(Donut.r21 - 1, Donut.r22 - 1, c_B, s_B);
+					
 					nums[counter++] = Donut.donuts_per_tap++;
 				}
 				else
@@ -635,7 +637,7 @@ void DonutRotatus ()
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%#*++==-:........:::...   ......::..:-=+++*%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%+:..............::--:.....................:-+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+:...........:::::--:.........................-+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@FLP@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%-............:-==-==-:..::::::.................:=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@FILIP@@@DOBNIKAR@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%-............:-==-==-:..::::::.................:=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@2025@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#=:......::.....::-====-:-=*=:....................:+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@VGRS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#=:...::::::::.....::=====-::::...........::........=%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#-:::..:-::-:.:::......:=+++=:::-:..........::...:...:=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -1,5 +1,0 @@
-../Core/Src/donut_old.c:44:10:convert_8bit_to_RGB565	1
-../Core/Src/donut_old.c:55:23:project_cords	1
-../Core/Src/donut_old.c:73:13:calculate_pixel	1
-../Core/Src/donut_old.c:97:8:luminance	1
-../Core/Src/donut_old.c:118:6:DonutOld	10
