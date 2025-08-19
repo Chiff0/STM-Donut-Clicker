@@ -85,7 +85,7 @@ typedef struct
 	bool third_impact;
 } Donut_Game;
 
-Donut_Game Donut = {10000001, 1, 0, 0, 1, 8, 12, 8, 13, 16, &rgb, false, false, false, false, false};
+Donut_Game Donut = {0, 1, 0, 0, 1, 8, 12, 8, 13, 16, &rgb, false, false, false, false, false};
 
 typedef struct
 {
