@@ -460,7 +460,7 @@ void draw_frame_low_power ()
     pulse = (pulse + 1) % 60;
 
 
-    reset_frame();
+    memset (b_1, 0xFF, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof (uint16_t));
 
 
     uint16_t brightness = 128 + (sin (pulse * 0.1) * 127);
@@ -473,7 +473,7 @@ void draw_frame_low_power ()
 	char counter[32];
 	if (Donut.donuts_count < 1000)
 	{
-		sprintf(counter, "%lu LCL COLLECTED", Donut.donuts_count);
+		sprintf (counter, "%lu LCL COLLECTED", Donut.donuts_count);
 	}
 	else if (Donut.donuts_count < 1000000)
 	{
@@ -483,7 +483,7 @@ void draw_frame_low_power ()
 	{
 		sprintf (counter, "%lu.%luM LCL COLLECTED", Donut.donuts_count / 1000000, (Donut.donuts_count % 1000000) / 10000);
 	}
-    FLP_Draw_String (b_1, counter, 170, 160, color);
+    FLP_Draw_String (b_1, counter, 170, 160, LCD_COLOR_BLACK);
     SCB_CleanInvalidateDCache ();
     draw_donut ();
 }
