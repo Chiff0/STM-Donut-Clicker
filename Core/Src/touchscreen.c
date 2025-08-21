@@ -41,6 +41,7 @@ uint32_t nums[6];
 uint32_t inactivity_counter = 0;
 
 // shoutout to a1k0n for the macro
+// More explained here: https://www.a1k0n.net/2021/01/13/optimizing-donut.html
 #define R(mul,shift,x,y) \
   _=x; \
   x -= mul*y>>shift; \
